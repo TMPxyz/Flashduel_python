@@ -8,8 +8,9 @@ class Player:
     act as a data holder and simple calc
     """
 
-    def __init__(self, core:Core, name:str):
+    def __init__(self, core:Core, name:str, mind:"mind"):
         self.name = name
+        self.mind = mind
         self.pos = -1
         self.startPos = -1
         self.oppo = None

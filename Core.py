@@ -13,8 +13,9 @@ class Core:
     it doesn't handle UI and input errors
     """
 
-    def __init__(self):
-        self.players = [Player.Player(self, "Player1"), Player.Player(self, "Player2")]
+    def __init__(self, minds=[]):
+        assert len(minds) == 2, "Core.__init__: expect has 2 minds, get {0}".format(len(minds))
+        self.players = [Player.Player(self, "Player1", minds[0]), Player.Player(self, "Player2", minds[1])]
         self.curPlayerIdx = 0
         self.deck = [ 1, 2, 3, 4, 5 ] * 5
         self.atkVector = []
@@ -23,6 +24,9 @@ class Core:
         self.winner = None
         self.playedCards = [0, 0, 0, 0, 0]
         self.endReason = ""
+
+    def isDefenderPhase(self):
+        return len(self.atkVector) > 0
 
     def prepareGame(self):
         self.atkVector.clear()
@@ -89,7 +93,7 @@ class Core:
     #     p.drawFull()
     #     self.switchSide()
 
-    def cmd_move(self, p:Player, card:int, forward:bool=True, noDraw=False):
+    def cmd_move(self, p:Player, card:int, forward:bool=True):
         p.hands.remove(card)
         self.playedCards[card-1]+=1
         self._doMove(p, card, forward)

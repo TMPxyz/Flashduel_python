@@ -5,6 +5,8 @@ import os
 from .Core import Core
 from .Core import EndException
 from .View import View
+from .Mind import HumanMind
+from .Mind import RNG_AIMind
 
 class Controller:
     """
@@ -12,7 +14,9 @@ class Controller:
     """
 
     def __init__(self):
-        self.core = Core()
+        self.core = Core( [HumanMind(), RNG_AIMind()] )
+        for p in self.core.players:
+            p.mind.Init(self.core, self)
         self.view = View(self.core)
 
         self.dispatch = {
@@ -21,8 +25,8 @@ class Controller:
             "forward":  {'mtd':self.onForward,      'doc':" <X>: move forward X cell"},
             "back":     {'mtd':self.onBackward,     'doc':" <X>: move backward X cell"},
             "push":     {'mtd':self.onPush,         'doc':" <X>: push opponent X cell"},
-            "attack":   {'mtd':self.onAttack,       'doc':" [2]: attack opponent which is X away"},
-            "dashAttack":{'mtd':self.onDashAttack,  'doc':" <mX> [2]: first move mX, then attack opponent which is aX away"},
+            "attack":   {'mtd':self.onAttack,       'doc':" [2]: attack opponent"},
+            "dash":     {'mtd':self.onDashAttack,   'doc':" <mX> [2]: first move mX, then attack opponent"},
             "defend":   {'mtd':self.onDefend,       'doc':": defend opponent's attack"},
             "retreat":  {'mtd':self.onRetreat,      'doc':" <X>: retreat with X cell"},
             "behit":    {'mtd':self.onBehit,        'doc':": get hit by opponent"}
@@ -42,12 +46,10 @@ class Controller:
 
         try:
             if len(self.core.atkVector) == 0:
-                cmd = input("{0}, input your cmd:".format(self.core.curPlayer().name))
-                ret = self.Handle(cmd)
+                ret = self.core.curPlayer().mind.Think()
             else:
-                cmd = input("{0}, you're under attack, you cmd:".format(self.core.curPlayer().oppo.name))
-                ret = self.Handle(cmd)
-            return ret            
+                ret = self.core.curPlayer().oppo.mind.Think()
+            return ret
         except EndException:
             self.view.playedCardState()
             self.view.trackState()
@@ -175,6 +177,10 @@ class Controller:
             return
         
         dist = int(math.fabs(oppo.pos-curP.pos))
+        if dist <= 1:
+            print("!!! Distance must be larger than 1 to dash attack")
+            return
+
         afterDist = max(1, dist - mvCard)
         cntAtkCard = curP.countCard(afterDist)
         if cntAtkCard < needAtkCard:

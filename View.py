@@ -2,13 +2,9 @@ import math
 
 from . import Player
 from . import Core
+from .Mind import HumanMind
 
 class View:
-
-    # self.view.deckState()
-    # self.view.trackState()
-    # self.view.playerState()
-    # self.view.atkState()
 
     def __init__(self, core:Core):
         self.core = core
@@ -39,8 +35,9 @@ class View:
     def playerState(self):
         for i in range(2):
             p = self.core.players[i]
-            s = "{0} hands:{1}".format(self._getPlayerStateSymbol(p), p.hands)
-            print(s)
+            if isinstance(p.mind, HumanMind):
+                s = "{0} hands:{1}".format(self._getPlayerStateSymbol(p), p.hands)
+                print(s)
 
     def _getPlayerStateSymbol(self, p:Player):
         if self.core.curPlayer() == p:
